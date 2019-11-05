@@ -30,4 +30,7 @@ public class Product {
 
 	@Column
 	private String keywords;
+
+	@Column
+	private Byte[] blobImg;
 }

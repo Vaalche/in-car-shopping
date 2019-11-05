@@ -6,51 +6,49 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import bg.tusofia.valentinborisov.carshoppingendpoint.dto.BrandDTO;
+import bg.tusofia.valentinborisov.carshoppingendpoint.dto.ProductDTO;
 import bg.tusofia.valentinborisov.carshoppingendpoint.entities.Brand;
-import bg.tusofia.valentinborisov.carshoppingendpoint.entities.Product;
-import bg.tusofia.valentinborisov.carshoppingendpoint.repositories.BrandRepository;
-import bg.tusofia.valentinborisov.carshoppingendpoint.repositories.ProductRepository;
+import bg.tusofia.valentinborisov.carshoppingendpoint.services.BrandService;
+import bg.tusofia.valentinborisov.carshoppingendpoint.services.ProductService;
 
 @RestController
 public class CarShoppingRestController {
 
 	@Autowired
-	private BrandRepository brandRepository;
+	private BrandService brandService;
 
 	@Autowired
-	private ProductRepository productRepository;
+	private ProductService productService;
 
 	@GetMapping(path = "/getBrands")
 	public List<Brand> getBrands() {
-
-		return brandRepository.findAll();
+		return brandService.getBrands();
 	}
 
 	@PostMapping("/addBrands")
-	public List<Brand> createBrand(@Valid @RequestBody List<Brand> brands) {
-		return brandRepository.saveAll(brands);
+	public List<Long> createBrands(@Valid @RequestBody List<BrandDTO> brandsDto) {
+		return this.brandService.createBrands(brandsDto);
 	}
 
 	@PostMapping("/addProduct")
-	public Product addProduct(@Valid @RequestBody Product product) {
-		return brandRepository.findByName(product.getBrand().getName()).map(brand -> {
-			product.setBrand(brand);
-			return productRepository.save(product);
-		}).orElseThrow(RuntimeException::new);
+	public Long addProduct(@Valid @RequestBody ProductDTO productDto) {
+		return this.productService.addProduct(productDto);
 	}
 
 	@PostMapping("/addProductsList")
-	public List<Product> addProductsList(@Valid @RequestBody List<Product> products) {
+	public List<Long> addProductsList(@Valid @RequestBody List<ProductDTO> productDtos) {
 
-		products.forEach(product -> brandRepository.findByName(product.getBrand().getName()).map(brand -> {
-			product.setBrand(brand);
-			return product;
-		}).orElseThrow(RuntimeException::new));
+		return this.productService.addProductsList(productDtos);
+	}
 
-		return productRepository.saveAll(products);
+	@GetMapping("/getProductsByBrandName/{brandName}")
+	public List<ProductDTO> getProductsByBrandName(@PathVariable String brandName) {
+		return this.productService.getProductsByBrandName(brandName);
 	}
 }
